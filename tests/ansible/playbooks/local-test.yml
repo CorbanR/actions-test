@@ -1,0 +1,13 @@
+---
+- name: Test host
+  hosts: testhost
+  remote_user: "root"
+  become: true
+  tasks:
+    - name: Test command
+      command: "echo 'hello world'"
+
+    - name: Debug python playbook path
+      debug:
+        msg: "Python interpreter is {{ ansible_playbook_python }}"
+      ignore_errors: true
