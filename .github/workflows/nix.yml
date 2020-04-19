@@ -3,6 +3,8 @@ on:
   pull_request:
   push:
 jobs:
+  # Inititally was going to test caching /nix/store , but ran into permissions issues between jobs
+  # https://github.com/actions/cache/issues/133
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -15,11 +17,11 @@ jobs:
       run: cat /etc/nix/nix.conf
     - name: nix build test
       run: nix-build tests/nix/default.nix
-    - name: Get/Create cache nix-store
-      uses: actions/cache@v1
-      with:
-        key: ${{ runner.os }}-${GITHUB_SHA::10}
-        path: /nix/store
+    #- name: Get/Create cache nix-store
+      #uses: actions/cache@v1
+      #with:
+        #key: ${{ runner.os }}-${GITHUB_SHA::10}
+        #path: /nix/store
 
   build-nix-cache:
     needs: "tests"
@@ -30,17 +32,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v8
-    - name: Get/Create cache nix-store
-      uses: actions/cache@v1
-      with:
-        key: ${{ runner.os }}-${GITHUB_SHA::10}
-        path: /nix/store
+    #- name: Get/Create cache nix-store
+      #uses: actions/cache@v1
+      #with:
+        #key: ${{ runner.os }}-${GITHUB_SHA::10}
+        #path: /nix/store
     - name: Create output path
       run: mkdir -p _output/cache
     - name: Create channel archive
       if: ${{ matrix.os }} == 'ubuntu-18.04'
       run: |
-        tar -cJf "_output/nixexprs.tar.xz" ./*.nix \
+        tar -cJf "_output/nixexprs.tar.xz" tests/nix \
             --transform "s,^,${PWD##*/}/," \
             --owner=0 --group=0 --mtime="1970-01-01 00:00:00 UTC"
 
@@ -48,10 +50,14 @@ jobs:
         printf 'https://nixpkgs.raunco.co/cache' > "_output/binary-cache-url"
     - name: nix build test
       run: nix-build tests/nix/default.nix
+    - name: copy cache
+      run: |
+        nix copy -f tests/nix/default.nix --to "file:///$PWD/_output/cache"
+        nix path-info --store "file:///$PWD/_output/cache" --json | json_pp
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: nix-cache-${{ matrix.os }}-${GITHUB_SHA::10}
+        name: nix-artifacts-${{ matrix.os }}-${GITHUB_SHA::10}
         path: _output
 
   combine-test:
@@ -62,14 +68,15 @@ jobs:
     - name: Download linux artifacts
       uses: actions/download-artifact@v1
       with:
-        name: nix-cache-ubuntu-18.04-${GITHUB_SHA::10}
+        name: nix-artifacts-ubuntu-18.04-${GITHUB_SHA::10}
     - name: Download mac artifacts
       uses: actions/download-artifact@b85295d276
       with:
-        name: nix-cache-macos-10.15-${GITHUB_SHA::10}
+        name: nix-artifacts-macos-10.15-${GITHUB_SHA::10}
     - name: Combine cache files
       run: |
         ls -lart -hu
         mkdir -p _output
-        cp -r nix-cache-macos-10.15-${GITHUB_SHA::10}/. _output
-        cp -r nix-cache-ubuntu-18.04-${GITHUB_SHA::10}/. _output
+        cp -r nix-artifacts-macos-10.15-${GITHUB_SHA::10}/. _output
+        cp -r nix-artifacts-ubuntu-18.04-${GITHUB_SHA::10}/. _output
+        du -hc
