@@ -18,7 +18,7 @@ jobs:
     - name: Get/Create cache nix-store
       uses: actions/cache@v1
       with:
-        name: ${{ runner.os }}-${GITHUB_SHA::10}
+        key: ${{ runner.os }}-${GITHUB_SHA::10}
         path: /nix/store
 
   build-nix-cache:
@@ -33,7 +33,7 @@ jobs:
     - name: Get/Create cache nix-store
       uses: actions/cache@v1
       with:
-        name: ${{ runner.os }}-${GITHUB_SHA::10}
+        key: ${{ runner.os }}-${GITHUB_SHA::10}
         path: /nix/store
     - name: Create output path
       run: mkdir -p _output/cache
