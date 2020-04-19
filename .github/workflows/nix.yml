@@ -14,7 +14,7 @@ jobs:
     - name: Print nix.conf
       run: cat /etc/nix/nix.conf
     - name: nix build test
-      run: nix-build tests/nixpkgs/default.nix
+      run: nix-build tests/nix/default.nix
     - name: Get/Create cache nix-store
       uses: actions/cache@v1
       with:
@@ -47,7 +47,7 @@ jobs:
         touch "_output/index.html"
         printf 'https://nixpkgs.raunco.co/cache' > "_output/binary-cache-url"
     - name: nix build test
-      run: nix-build tests/nixpkgs/default.nix
+      run: nix-build tests/nix/default.nix
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
