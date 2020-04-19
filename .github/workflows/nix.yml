@@ -5,6 +5,7 @@ on:
 defaults:
   run:
     shell: bash
+    working-directory: $GITHUB_WORKSPACE
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
@@ -56,6 +57,7 @@ jobs:
       with:
         name: nix-cache-${{ matrix.os }}-${GITHUB_SHA::10}
         path: _output
+
   combine-test:
     needs: "build-nix-cache"
     runs-on: ubuntu-18.04
