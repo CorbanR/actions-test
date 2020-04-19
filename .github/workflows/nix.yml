@@ -4,13 +4,14 @@ on: [push, pull_request]
 defaults:
   run:
     shell: bash
-  runs-on: ${{ matrix.os }}
-  strategy:
-    matrix:
-      os: [ubuntu-18.04, macos-10.15]
-  steps:
-    # v2.1.0
-  - uses: actions/checkout@01aecccf73
+  jobs:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-10.15]
+    steps:
+      # v2.1.0
+    - uses: actions/checkout@01aecccf73
 
 jobs:
   tests:
