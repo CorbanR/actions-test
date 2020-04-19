@@ -1,24 +1,77 @@
-name: "NixTest"
-on: [push, pull_request]
-
+name: "Nixpkgs"
+on:
+  pull_request:
+  push:
 defaults:
   run:
     shell: bash
-  jobs:
+jobs:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-18.04, macos-10.15]
     steps:
-      # v2.1.0
-    - uses: actions/checkout@01aecccf73
-
-jobs:
-  tests:
-    steps:
-      # v2.1.0
-    - uses: actions/checkout@01aecccf73
-      # v8
-    - uses: cachix/install-nix-action@ebed63b0a2
+    - uses: actions/checkout@v2
+    - uses: cachix/install-nix-action@v8
     - name: Print nix.conf
       run: cat /etc/nix/nix.conf
+    - name: nix build test
+      run: nix-build tests/nixpkgs/default.nix
+    - name: Get/Create cache nix-store
+      uses: actions/cache@v1
+      with:
+        name: ${{ runner.os }}-${GITHUB_SHA::10}
+        path: /nix/store
+
+  build-nix-cache:
+    needs: "tests"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-10.15]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: cachix/install-nix-action@v8
+    - name: Get/Create cache nix-store
+      uses: actions/cache@v1
+      with:
+        name: ${{ runner.os }}-${GITHUB_SHA::10}
+        path: /nix/store
+    - name: Create output path
+      run: mkdir -p _output/cache
+    - name: Create channel archive
+      if: ${{ matrix.os }} == 'ubuntu-18.04'
+      run: |
+        tar -cJf "_output/nixexprs.tar.xz" ./*.nix \
+            --transform "s,^,${PWD##*/}/," \
+            --owner=0 --group=0 --mtime="1970-01-01 00:00:00 UTC"
+
+        touch "_output/index.html"
+        printf 'https://nixpkgs.raunco.co/cache' > "_output/binary-cache-url"
+    - name: nix build test
+      run: nix-build tests/nixpkgs/default.nix
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: nix-cache-${{ matrix.os }}-${GITHUB_SHA::10}
+        path: _output
+  combine-test:
+    needs: "build-nix-cache"
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download linux artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: nix-cache-ubuntu-18.04-${GITHUB_SHA::10}
+    - name: Download mac artifacts
+      uses: actions/download-artifact@b85295d276
+      with:
+        name: nix-cache-macos-10.15-${GITHUB_SHA::10}
+    - name: Combine cache files
+      run: |
+        ls -lart -hu
+        mkdir -p _output
+        cp -r nix-cache-macos-10.15-${GITHUB_SHA::10}/. _output
+        cp -r nix-cache-ubuntu-18.04-${GITHUB_SHA::10}/. _output
