@@ -1,11 +1,6 @@
 ---
 name: AnsiblePythonTest
 on: [push, pull_request]
-defaults:
-  run:
-    shell: bash
-    working-directory: $GITHUB_WORKSPACE
-
 jobs:
   deps:
     name: Dependencies
