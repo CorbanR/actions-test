@@ -1,20 +1,28 @@
 name: "defaults"
-defaults:
-  runs-on: ${{ matrix.os }}
-  strategy:
-    matrix:
-      os: [ubuntu-18.04, macos-10.15]
 
-on:
-  pull_request:
-  push:
+on: [pull_request, push]
+defaults:
+  run:
+    shell: bash
+
+env:
+  os: [ubuntu-18.04, macos-10.15]
+
 jobs:
   job1:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ env.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Run echo command
       run: echo 'test'
   job2:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ env.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Run echo command
