@@ -20,7 +20,7 @@ jobs:
     #- name: Get/Create cache nix-store
       #uses: actions/cache@v1
       #with:
-        #key: ${{ runner.os }}-${GITHUB_SHA::10}
+        #key: ${{ runner.os }}-${{ github.sha }}
         #path: /nix/store
 
   build-nix-cache:
@@ -35,7 +35,7 @@ jobs:
     #- name: Get/Create cache nix-store
       #uses: actions/cache@v1
       #with:
-        #key: ${{ runner.os }}-${GITHUB_SHA::10}
+        #key: ${{ runner.os }}-${{ github.sha }}
         #path: /nix/store
     - name: Create output path
       run: mkdir -p _output/cache
@@ -57,7 +57,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: nix-artifacts-${{ matrix.os }}-${GITHUB_SHA::10}
+        name: nix-artifacts-${{ matrix.os }}-${{ github.sha }}
         path: _output
 
   combine-test:
@@ -68,15 +68,15 @@ jobs:
     - name: Download linux artifacts
       uses: actions/download-artifact@v1
       with:
-        name: nix-artifacts-ubuntu-18.04-${GITHUB_SHA::10}
+        name: nix-artifacts-ubuntu-18.04-${{ github.sha }}
     - name: Download mac artifacts
       uses: actions/download-artifact@b85295d276
       with:
-        name: nix-artifacts-macos-10.15-${GITHUB_SHA::10}
+        name: nix-artifacts-macos-10.15-${{ github.sha }}
     - name: Combine cache files
       run: |
         ls -lart -hu
         mkdir -p _output
-        cp -r nix-artifacts-macos-10.15-${GITHUB_SHA::10}/. _output
-        cp -r nix-artifacts-ubuntu-18.04-${GITHUB_SHA::10}/. _output
+        cp -r nix-artifacts-macos-10.15-${GITHUB_SHA}/. _output
+        cp -r nix-artifacts-ubuntu-18.04-${GITHUB_SHA}/. _output
         du -hc
