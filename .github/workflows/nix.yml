@@ -79,4 +79,8 @@ jobs:
         mkdir -p _output
         cp -r nix-artifacts-macos-10.15-${GITHUB_SHA}/. _output
         cp -r nix-artifacts-ubuntu-18.04-${GITHUB_SHA}/. _output
-        du -hc
+    - name: Upload combined artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: nix-artifacts-combined-${{ github.sha }}
+        path: _output

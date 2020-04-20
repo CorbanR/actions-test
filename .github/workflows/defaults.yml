@@ -1,0 +1,21 @@
+name: "defaults"
+defaults:
+  runs-on: ${{ matrix.os }}
+  strategy:
+    matrix:
+      os: [ubuntu-18.04, macos-10.15]
+
+on:
+  pull_request:
+  push:
+jobs:
+  job1:
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run echo command
+      run: echo 'test'
+  job2:
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run echo command
+      run: echo 'cool'
