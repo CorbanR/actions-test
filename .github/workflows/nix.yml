@@ -53,7 +53,7 @@ jobs:
     - name: copy cache
       run: |
         nix copy -f tests/nix/default.nix --to "file:///$PWD/_output/cache"
-        nix path-info --store "file:///$PWD/_output/cache" --json | json_pp
+        nix path-info -f tests/nix/default.nix --store "file:///$PWD/_output/cache" --json | json_pp
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
