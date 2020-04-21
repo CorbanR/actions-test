@@ -15,6 +15,8 @@ jobs:
     - uses: cachix/install-nix-action@v8
     - name: Print nix.conf
       run: cat /etc/nix/nix.conf
+    - name: list /nix/store
+      run: sudo ls -lart -hu /nix/store
     - name: nix build test
       run: nix-build tests/nix/default.nix
     #- name: Get/Create cache nix-store
