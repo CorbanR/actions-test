@@ -85,7 +85,6 @@ jobs:
       with:
         name: nix-artifacts-macos-10.15-${{ github.sha }}
         path: nix-artifacts-macos-10.15-${{ github.sha }}
-    - name: Download mac artifacts
     - name: Combine cache files
       run: |
         ls -lart -hu
