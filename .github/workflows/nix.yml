@@ -69,11 +69,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Cleanup tasks
       run: |
-        df -h
-        apt clean
+        sudo df -h
+        sudo apt clean
         sudo rm -rf "/usr/local/share/boost"
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-        df -h
+        sudo df -h
 
     - name: Download linux artifacts
       uses: actions/download-artifact@v1
