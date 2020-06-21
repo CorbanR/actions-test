@@ -12,18 +12,18 @@ jobs:
         os: [ubuntu-18.04, macos-10.15]
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v8
+    - uses: cachix/install-nix-action@v10
     - name: Print nix.conf
       run: cat /etc/nix/nix.conf
     - name: list /nix/store
       run: sudo ls -lart -hu /nix/store
     - name: nix build test
       run: nix-build tests/nix/default.nix
-    #- name: Get/Create cache nix-store
-      #uses: actions/cache@v1
-      #with:
-        #key: ${{ runner.os }}-${{ github.sha }}
-        #path: /nix/store
+    - name: Get/Create cache nix-store
+      uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}-${{ github.sha }}
+        path: /nix/store
 
   build-nix-cache:
     needs: "tests"
@@ -33,12 +33,12 @@ jobs:
         os: [ubuntu-18.04, macos-10.15]
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v8
-    #- name: Get/Create cache nix-store
-      #uses: actions/cache@v1
-      #with:
-        #key: ${{ runner.os }}-${{ github.sha }}
-        #path: /nix/store
+    - uses: cachix/install-nix-action@v10
+    - name: Get/Create cache nix-store
+      uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}-${{ github.sha }}
+        path: /nix/store
     - name: Create output path
       run: mkdir -p _output/cache
     - name: Create channel archive
@@ -57,7 +57,7 @@ jobs:
         nix copy -f tests/nix/default.nix --to "file:///$PWD/_output/cache"
         nix path-info -f tests/nix/default.nix --store "file:///$PWD/_output/cache" --json | json_pp
     - name: Upload artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: nix-artifacts-${{ matrix.os }}-${{ github.sha }}
         path: _output
@@ -76,7 +76,7 @@ jobs:
         sudo df -h
 
     - name: Download linux artifacts
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2
       with:
         name: nix-artifacts-ubuntu-18.04-${{ github.sha }}
         path: nix-artifacts-ubuntu-18.04-${{ github.sha }}
@@ -92,7 +92,7 @@ jobs:
         cp -r nix-artifacts-macos-10.15-${GITHUB_SHA}/. _output
         cp -r nix-artifacts-ubuntu-18.04-${GITHUB_SHA}/. _output
     - name: Upload combined artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: nix-artifacts-combined-${{ github.sha }}
         path: _output
